@@ -4,7 +4,7 @@ Manages dataset creation, transforms, and dataloaders.
 """
 
 import os
-import lightning as L
+import pytorch_lightning as L
 from torch.utils.data import DataLoader
 from torchvision import transforms
 

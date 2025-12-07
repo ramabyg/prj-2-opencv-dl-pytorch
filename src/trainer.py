@@ -3,9 +3,9 @@ Training orchestration for Kenyan Food 13 Classification.
 Sets up PyTorch Lightning Trainer with callbacks and logging.
 """
 
-import lightning as L
-from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
-from lightning.pytorch.loggers import TensorBoardLogger
+import pytorch_lightning as L
+from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
+from pytorch_lightning.loggers import TensorBoardLogger
 
 from .config import TrainingConfiguration, DataConfiguration, SystemConfiguration
 

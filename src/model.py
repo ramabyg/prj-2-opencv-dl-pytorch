@@ -6,7 +6,7 @@ Uses transfer learning with GoogleNet as base model.
 import torch
 import torch.nn as nn
 import torchvision
-import lightning as L
+import pytorch_lightning as L
 from torchmetrics import MeanMetric
 from torchmetrics.classification import (
     MulticlassAccuracy,
@@ -61,7 +61,7 @@ class KenyanFood13Classifier(L.LightningModule):
             else:
                 print("Initializing GoogleNet from scratch (no pre-trained weights)")
                 self.model = torchvision.models.googlenet(weights=None)
-            
+
             # Replace the final layer for our number of classes
             self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
         else:
