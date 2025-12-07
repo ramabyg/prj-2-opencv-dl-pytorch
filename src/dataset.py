@@ -50,10 +50,10 @@ class KenyanFood13Dataset(Dataset):
                  target_transform=None, local_mode=False):
 
         # Handle local mode file naming
-        if local_mode:
-            base, ext = os.path.splitext(annotations_file)
-            annotations_file = f"{base}_local{ext}"
-            print("Running in local mode - loading data from local paths")
+        # if local_mode:
+        #     base, ext = os.path.splitext(annotations_file)
+        #     annotations_file = f"{base}_local{ext}"
+        #     print("Running in local mode - loading data from local paths")
 
         # Validate paths
         if not os.path.exists(annotations_file):
@@ -68,10 +68,6 @@ class KenyanFood13Dataset(Dataset):
         self.target_transform = target_transform
         self.local_mode = local_mode
 
-        # Calculate number of classes
-        num_classes = len(self.img_labels['label'].unique())
-        self.num_classes = num_classes
-        print(f"Dataset initialized with {len(self.img_labels)} samples belonging to {num_classes} classes.")
 
         # Split into train and validation sets (80:20 ratio)
         split_index = int(0.8 * len(self.img_labels))
@@ -81,6 +77,15 @@ class KenyanFood13Dataset(Dataset):
         else:
             self.img_labels = self.img_labels.iloc[split_index:].reset_index(drop=True)
             print(f"Using {len(self.img_labels)} samples for validation.")
+
+        # Calculate number of classes
+        num_classes = len(self.img_labels['class'].unique())
+        self.num_classes = num_classes
+        print(f"Dataset initialized with {len(self.img_labels)} samples belonging to {num_classes} classes.")
+
+        # create a mapping from class names to integer labels
+        self.class_to_idx = {cls_name: idx for idx, cls_name in enumerate(sorted(self.img_labels['class'].unique()))}
+
 
     def __getitem__(self, idx):
         """
@@ -96,9 +101,15 @@ class KenyanFood13Dataset(Dataset):
             idx = idx.tolist()
 
         # Load image
-        img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
+        img_filename = str(self.img_labels.iloc[idx, 0])
+        # Add .jpg extension if not already present
+        if not img_filename.lower().endswith(('.jpg', '.jpeg', '.png')):
+            img_filename += '.jpg'
+        img_path = os.path.join(self.img_dir, img_filename)
         image = Image.open(img_path).convert("RGB")
-        label = self.img_labels.iloc[idx, 1]
+
+        # Get label and ensure it's an integer
+        label = int(self.class_to_idx[self.img_labels.iloc[idx, 1]])
 
         # Apply transforms
         if self.transform:

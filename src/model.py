@@ -52,7 +52,16 @@ class KenyanFood13Classifier(L.LightningModule):
 
         # Load base model
         if training_config.model_name == "googlenet":
-            self.model = torchvision.models.googlenet(pretrained=training_config.pretrained)
+            # Use new torchvision API (weights parameter instead of pretrained)
+            if training_config.pretrained:
+                print("Loading pre-trained GoogleNet weights...")
+                from torchvision.models import GoogLeNet_Weights
+                self.model = torchvision.models.googlenet(weights=GoogLeNet_Weights.IMAGENET1K_V1)
+                print("✓ Pre-trained weights loaded successfully")
+            else:
+                print("Initializing GoogleNet from scratch (no pre-trained weights)")
+                self.model = torchvision.models.googlenet(weights=None)
+            
             # Replace the final layer for our number of classes
             self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
         else:

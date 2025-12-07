@@ -45,10 +45,10 @@ class KenyanFood13DataModule(L.LightningDataModule):
 
         # Handle local mode annotation file naming
         local_mode = not is_kaggle_environment()
-        if local_mode:
-            print("Running in local mode - loading data from local paths")
-            base, ext = os.path.splitext(self.data_config.annotations_file)
-            self.data_config.annotations_file = f"{base}_local{ext}"
+        # if local_mode:
+        #     print("Running in local mode - loading data from local paths")
+        #     base, ext = os.path.splitext(self.data_config.annotations_file)
+        #     self.data_config.annotations_file = f"{base}_local{ext}"
 
         # Validate annotation file exists
         if not os.path.exists(self.data_config.annotations_file):
