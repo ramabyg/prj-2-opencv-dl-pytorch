@@ -97,13 +97,13 @@ class DataConfiguration:
         """Set default paths based on environment if not explicitly provided."""
         if self.annotations_file is None:
             if is_kaggle_environment():
-                self.annotations_file = "/kaggle/input/kenyan-food-13/train.csv"
+                self.annotations_file = "/kaggle/input/opencv-pytorch-project-2-classification-round-3/train.csv"
             else:
                 self.annotations_file = "../data/kenyan-food-13/train.csv"
 
         if self.img_dir is None:
             if is_kaggle_environment():
-                self.img_dir = "/kaggle/input/kenyan-food-13/images/images"
+                self.img_dir = "/kaggle/input/opencv-pytorch-project-2-classification-round-3/images/images"
             else:
                 self.img_dir = "../data/kenyan-food-13/images/images"
 
