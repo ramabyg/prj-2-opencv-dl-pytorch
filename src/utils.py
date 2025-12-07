@@ -75,8 +75,13 @@ def calculate_dataset_mean_std(annotations_file,
     processed_count = 0
     error_count = 0
 
+
     for idx, row in img_labels.iterrows():
-        img_path = os.path.join(img_dir, row.iloc[0])
+        img_filename = str(img_labels.iloc[idx, 0])
+        # Add .jpg extension if not already present
+        if not img_filename.lower().endswith(('.jpg', '.jpeg', '.png')):
+            img_filename += '.jpg'
+        img_path = os.path.join(img_dir, img_filename)
         try:
             img = Image.open(img_path).convert("RGB")
             img = img.resize(img_size)
