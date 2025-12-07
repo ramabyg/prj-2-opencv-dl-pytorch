@@ -65,7 +65,7 @@ def calculate_dataset_mean_std(annotations_file,
 
     # Use subset for faster computation if specified
     if sample_size and sample_size < total_images:
-        img_labels = img_labels.sample(n=sample_size, random_state=42)
+        img_labels = img_labels.sample(n=sample_size, random_state=42).reset_index(drop=True)
         print(f"Calculating mean and std from {sample_size} sampled images (out of {total_images})...")
     else:
         print(f"Calculating mean and std from all {total_images} images...")
@@ -77,7 +77,7 @@ def calculate_dataset_mean_std(annotations_file,
 
 
     for idx, row in img_labels.iterrows():
-        img_filename = str(img_labels.iloc[idx, 0])
+        img_filename = str(row.iloc[0])
         # Add .jpg extension if not already present
         if not img_filename.lower().endswith(('.jpg', '.jpeg', '.png')):
             img_filename += '.jpg'
