@@ -6,13 +6,19 @@ Project 2 in Deeplearning with OpenCV course week 7.
 
 ```
 prj-2-opencv-dl-pytorch/
-├── src/                    # Modular source code
-│   ├── __init__.py        # Package initialization
-│   ├── config.py          # Configuration classes
-│   └── utils.py           # Utility functions
-├── Project2_Kaggle_Competition_Classification-Round3.ipynb  # Main notebook
-├── requirements.txt       # Python dependencies
-└── ReadMe.md             # This file
+├── src/                       # Modular source code (Phase 2)
+│   ├── __init__.py           # Package initialization with exports
+│   ├── config.py             # Configuration classes
+│   ├── dataset.py            # Custom PyTorch Dataset
+│   ├── datamodule.py         # Lightning DataModule
+│   ├── model.py              # Lightning model (GoogleNet transfer learning)
+│   ├── trainer.py            # Training orchestration
+│   └── utils.py              # Utility functions
+├── Project2_Kaggle_Competition_Classification-Round3.ipynb  # Original full notebook
+├── kaggle_train.ipynb        # Simplified Kaggle notebook (uses src/)
+├── requirements.txt          # Python dependencies
+├── MIGRATION_GUIDE.md        # Migration documentation
+└── ReadMe.md                 # This file
 ```
 
 ## Installation
@@ -58,7 +64,27 @@ prj-2-opencv-dl-pytorch/
 
 ## Usage
 
-### Quick Start
+### Quick Start (Simplified - Phase 2)
+
+```python
+# Import everything you need from src
+from src import get_config, KenyanFood13DataModule, KenyanFood13Classifier, train_model
+
+# Get configurations (auto-detects Kaggle/local)
+train_cfg, data_cfg, sys_cfg = get_config(num_epochs=20, batch_size=64)
+
+# Create and setup data
+data_module = KenyanFood13DataModule(data_cfg)
+data_module.setup()
+
+# Create model
+model = KenyanFood13Classifier(train_cfg, data_module.num_classes)
+
+# Train!
+train_model(train_cfg, data_cfg, sys_cfg, model, data_module)
+```
+
+### Detailed Usage (Original Approach)
 
 ```python
 # Import modules
