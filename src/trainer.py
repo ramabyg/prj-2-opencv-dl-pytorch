@@ -106,8 +106,14 @@ def train_model(
     num_gpus = torch.cuda.device_count() if torch.cuda.is_available() else 0
 
     if num_gpus > 1:
-        strategy = "ddp"  # Distributed Data Parallel for multi-GPU
-        print(f"Using {num_gpus} GPUs with DDP strategy")
+        # Use ddp_notebook for Jupyter/Kaggle notebooks, ddp for scripts
+        try:
+            get_ipython()  # This will succeed in Jupyter/IPython environment
+            strategy = "ddp_notebook"
+            print(f"Using {num_gpus} GPUs with DDP Notebook strategy (Jupyter compatible)")
+        except NameError:
+            strategy = "ddp"
+            print(f"Using {num_gpus} GPUs with DDP strategy")
     else:
         strategy = "auto"
         if num_gpus == 1:
