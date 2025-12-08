@@ -77,7 +77,7 @@ def train_model(
     # Early stopping callback
     early_stopping_callback = EarlyStopping(
         monitor="valid/acc",
-        patience=3,
+        patience=7,
         mode="max",
         verbose=True
     )
@@ -112,7 +112,8 @@ def train_model(
         default_root_dir=system_config.output_dir,
         log_every_n_steps=training_config.log_interval,
         enable_progress_bar=True,
-        enable_model_summary=True
+        enable_model_summary=True,
+        reload_dataloaders_every_n_epochs=0  # Prevent dataloader reload warnings
     )
 
     # Train and validate
