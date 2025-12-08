@@ -140,7 +140,9 @@ def train_model(
         log_every_n_steps=training_config.log_interval,
         enable_progress_bar=True,
         enable_model_summary=True,
-        reload_dataloaders_every_n_epochs=0  # Prevent dataloader reload warnings
+        reload_dataloaders_every_n_epochs=0,  # Prevent dataloader reload warnings
+        accumulate_grad_batches=2,  # Accumulate gradients to reduce memory usage
+        gradient_clip_val=1.0  # Clip gradients for stability
     )
 
     # Train and validate
