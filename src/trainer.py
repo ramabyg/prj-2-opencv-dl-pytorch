@@ -101,11 +101,26 @@ def train_model(
     # Map device to accelerator type
     accelerator = "gpu" if system_config.device == "cuda" else "cpu"
 
+    # Determine strategy for multi-GPU training
+    import torch
+    num_gpus = torch.cuda.device_count() if torch.cuda.is_available() else 0
+
+    if num_gpus > 1:
+        strategy = "ddp"  # Distributed Data Parallel for multi-GPU
+        print(f"Using {num_gpus} GPUs with DDP strategy")
+    else:
+        strategy = "auto"
+        if num_gpus == 1:
+            print("Using single GPU")
+        else:
+            print("Using CPU")
+
     # Create trainer
     trainer = L.Trainer(
         max_epochs=training_config.num_epochs,
         accelerator=accelerator,
         devices="auto",  # Use all available devices
+        strategy=strategy,  # Enable multi-GPU training
         precision=trainer_precision,
         callbacks=[checkpoint_callback, early_stopping_callback],
         logger=tensorboard_logger,
