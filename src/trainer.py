@@ -107,7 +107,7 @@ def train_model(
 
     # For multi-GPU in notebooks, use simpler approach
     if num_gpus > 1:
-        devices = num_gpus  # Explicitly set number of devices
+        devices = "auto" #num_gpus  # Explicitly set number of devices
         # Check if running in notebook environment
         try:
             get_ipython()
