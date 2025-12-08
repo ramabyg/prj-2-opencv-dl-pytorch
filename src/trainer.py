@@ -113,7 +113,7 @@ def train_model(
             get_ipython()
             # In Kaggle/Jupyter, use ddp_notebook for true multi-GPU
             # or 'auto' for simpler single-GPU fallback
-            strategy = "ddp_notebook"
+            strategy = "auto" # hard coded to auto mode to fix memory overflow issues "ddp_notebook"
             print(f"📊 Detected {num_gpus} GPUs - Using DDP Notebook strategy")
             print(f"⚠️  Note: If still using 1 GPU, Kaggle may need kernel restart")
         except NameError:
