@@ -105,27 +105,33 @@ def train_model(
     import torch
     num_gpus = torch.cuda.device_count() if torch.cuda.is_available() else 0
 
+    # For multi-GPU in notebooks, use simpler approach
     if num_gpus > 1:
-        # Use ddp_notebook for Jupyter/Kaggle notebooks, ddp for scripts
+        devices = num_gpus  # Explicitly set number of devices
+        # Check if running in notebook environment
         try:
-            get_ipython()  # This will succeed in Jupyter/IPython environment
+            get_ipython()
+            # In Kaggle/Jupyter, use ddp_notebook for true multi-GPU
+            # or 'auto' for simpler single-GPU fallback
             strategy = "ddp_notebook"
-            print(f"Using {num_gpus} GPUs with DDP Notebook strategy (Jupyter compatible)")
+            print(f"📊 Detected {num_gpus} GPUs - Using DDP Notebook strategy")
+            print(f"⚠️  Note: If still using 1 GPU, Kaggle may need kernel restart")
         except NameError:
             strategy = "ddp"
-            print(f"Using {num_gpus} GPUs with DDP strategy")
+            print(f"📊 Using {num_gpus} GPUs with DDP strategy")
     else:
+        devices = 1 if num_gpus == 1 else "auto"
         strategy = "auto"
         if num_gpus == 1:
-            print("Using single GPU")
+            print("📊 Using single GPU")
         else:
-            print("Using CPU")
+            print("📊 Using CPU")
 
     # Create trainer
     trainer = L.Trainer(
         max_epochs=training_config.num_epochs,
         accelerator=accelerator,
-        devices="auto",  # Use all available devices
+        devices=devices,  # Explicitly set device count
         strategy=strategy,  # Enable multi-GPU training
         precision=trainer_precision,
         callbacks=[checkpoint_callback, early_stopping_callback],

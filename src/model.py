@@ -146,19 +146,19 @@ class KenyanFood13Classifier(L.LightningModule):
         self.val_recall.update(preds, labels)
         self.val_f1.update(preds, labels)
 
-        # Log validation metrics
-        self.log('valid/loss', self.val_mean_loss, on_step=False, on_epoch=True, prog_bar=True)
-        self.log('valid/acc', self.val_accuracy, on_step=False, on_epoch=True, prog_bar=True)
-        self.log('valid/precision', self.val_precision, on_step=False, on_epoch=True, prog_bar=False)
-        self.log('valid/recall', self.val_recall, on_step=False, on_epoch=True, prog_bar=False)
-        self.log('valid/f1', self.val_f1, on_step=False, on_epoch=True, prog_bar=False)
+        # Log validation metrics (sync_dist=True for multi-GPU)
+        self.log('valid/loss', self.val_mean_loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log('valid/acc', self.val_accuracy, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log('valid/precision', self.val_precision, on_step=False, on_epoch=True, prog_bar=False, sync_dist=True)
+        self.log('valid/recall', self.val_recall, on_step=False, on_epoch=True, prog_bar=False, sync_dist=True)
+        self.log('valid/f1', self.val_f1, on_step=False, on_epoch=True, prog_bar=False, sync_dist=True)
 
     def on_validation_epoch_end(self):
         """Log epoch-level validation metrics."""
-        self.log('valid/precision', self.val_precision.compute(), on_epoch=True, prog_bar=True)
-        self.log('valid/recall', self.val_recall.compute(), on_epoch=True, prog_bar=True)
-        self.log('valid/f1', self.val_f1.compute(), on_epoch=True, prog_bar=True)
-        self.log('step', self.current_epoch, on_epoch=True, prog_bar=True)
+        self.log('valid/precision', self.val_precision.compute(), on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log('valid/recall', self.val_recall.compute(), on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log('valid/f1', self.val_f1.compute(), on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log('step', self.current_epoch, on_epoch=True, prog_bar=True, sync_dist=True)
 
         return super().on_validation_epoch_end()
 
