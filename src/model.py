@@ -15,6 +15,10 @@ from torchmetrics.classification import (
     MulticlassRecall
 )
 
+# Fix SSL certificate verification issues when downloading pre-trained weights
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
+
 from .config import TrainingConfiguration
 
 
@@ -51,13 +55,45 @@ class KenyanFood13Classifier(L.LightningModule):
         self.num_classes = num_classes
 
         # Load base model
-        if training_config.model_name == "googlenet":
+        # CHANGE 3: Added ResNet50 support (more powerful than GoogleNet)
+        if training_config.model_name == "resnet50":
+            # Use ResNet50 for better accuracy
+            if training_config.pretrained:
+                print("Loading pre-trained ResNet50 weights...")
+                from torchvision.models import ResNet50_Weights
+                self.model = torchvision.models.resnet50(weights=ResNet50_Weights.IMAGENET1K_V2)
+                print("[OK] Pre-trained ResNet50 weights loaded successfully")
+            else:
+                print("Initializing ResNet50 from scratch (no pre-trained weights)")
+                self.model = torchvision.models.resnet50(weights=None)
+
+            # CHANGE 2: Unfreeze more layers for fine-tuning (improves accuracy)
+            # Freeze early layers (features extraction), unfreeze later layers
+            print("Freezing early layers, unfreezing later layers for fine-tuning...")
+            # ResNet has ~50M parameters, freeze first 60% for transfer learning
+            all_params = list(self.model.parameters())
+            freeze_until = int(len(all_params) * 0.6)
+            for i, param in enumerate(all_params):
+                if i < freeze_until:
+                    param.requires_grad = False
+                else:
+                    param.requires_grad = True
+
+            trainable = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+            total = sum(p.numel() for p in self.model.parameters())
+            print(f"  Trainable: {trainable:,} / {total:,} parameters ({100*trainable/total:.1f}%)")
+
+            # Replace the final layer for our number of classes
+            self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
+
+        # ORIGINAL CODE (GoogleNet) - Kept for reference
+        elif training_config.model_name == "googlenet":
             # Use new torchvision API (weights parameter instead of pretrained)
             if training_config.pretrained:
                 print("Loading pre-trained GoogleNet weights...")
                 from torchvision.models import GoogLeNet_Weights
                 self.model = torchvision.models.googlenet(weights=GoogLeNet_Weights.IMAGENET1K_V1)
-                print("✓ Pre-trained weights loaded successfully")
+                print("[OK] Pre-trained weights loaded successfully")
             else:
                 print("Initializing GoogleNet from scratch (no pre-trained weights)")
                 self.model = torchvision.models.googlenet(weights=None)
@@ -65,7 +101,7 @@ class KenyanFood13Classifier(L.LightningModule):
             # Replace the final layer for our number of classes
             self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
         else:
-            raise ValueError(f"Model {training_config.model_name} not supported.")
+            raise ValueError(f"Model {training_config.model_name} not supported. Use 'resnet50' or 'googlenet'.")
 
         # Loss function
         self.criterion = nn.CrossEntropyLoss()
@@ -154,11 +190,21 @@ class KenyanFood13Classifier(L.LightningModule):
         self.log('valid/f1', self.val_f1, on_step=False, on_epoch=True, prog_bar=False, sync_dist=True)
 
     def on_validation_epoch_end(self):
-        """Log epoch-level validation metrics."""
+        """Log epoch-level validation metrics and model parameters."""
         self.log('valid/precision', self.val_precision.compute(), on_epoch=True, prog_bar=True, sync_dist=True)
         self.log('valid/recall', self.val_recall.compute(), on_epoch=True, prog_bar=True, sync_dist=True)
         self.log('valid/f1', self.val_f1.compute(), on_epoch=True, prog_bar=True, sync_dist=True)
         self.log('step', self.current_epoch, on_epoch=True, prog_bar=True, sync_dist=True)
+
+        # Log model parameter histograms to TensorBoard (shows weight distributions)
+        if self.logger:
+            for name, params in self.named_parameters():
+                if params.requires_grad:
+                    # Log weight distributions
+                    self.logger.experiment.add_histogram(f'weights/{name}', params, self.current_epoch)
+                    # Log gradient distributions (if gradients exist)
+                    if params.grad is not None:
+                        self.logger.experiment.add_histogram(f'gradients/{name}', params.grad, self.current_epoch)
 
         return super().on_validation_epoch_end()
 

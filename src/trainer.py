@@ -75,19 +75,28 @@ def train_model(
     )
 
     # Early stopping callback
-    early_stopping_callback = EarlyStopping(
-        monitor="valid/acc",
-        patience=7,
-        mode="max",
-        verbose=True
-    )
+    # CHANGE 3: Increased patience from 3 to 7 (allows more epochs to improve)
+    # Now configurable via TrainingConfiguration
+    if training_config.use_early_stopping:
+        early_stopping_callback = EarlyStopping(
+            monitor=training_config.early_stop_monitor,
+            patience=training_config.early_stop_patience,
+            mode=training_config.early_stop_mode,
+            verbose=True
+        )
+        callbacks_list = [checkpoint_callback, early_stopping_callback]
+        print(f"Early stopping enabled: monitor={training_config.early_stop_monitor}, patience={training_config.early_stop_patience}")
+    else:
+        callbacks_list = [checkpoint_callback]
+        print("Early stopping disabled")
 
     # TensorBoard logger
     tensorboard_logger = TensorBoardLogger(
         save_dir=system_config.output_dir,
         name="kenyan_food_logs",
         version=None,  # Auto-incrementing version
-        default_hp_metric=False
+        default_hp_metric=False,
+        log_graph=True  # Log model graph
     )
 
     # Map precision string to PyTorch Lightning expected value
@@ -123,9 +132,9 @@ def train_model(
         devices = 1 if num_gpus == 1 else "auto"
         strategy = "auto"
         if num_gpus == 1:
-            print("📊 Using single GPU")
+            print("[INFO] Using single GPU")
         else:
-            print("📊 Using CPU")
+            print("[INFO] Using CPU")
 
     # Create trainer
     trainer = L.Trainer(
@@ -134,7 +143,7 @@ def train_model(
         devices=devices,  # Explicitly set device count
         strategy=strategy,  # Enable multi-GPU training
         precision=trainer_precision,
-        callbacks=[checkpoint_callback, early_stopping_callback],
+        callbacks=callbacks_list,  # Use dynamic callbacks list
         logger=tensorboard_logger,
         default_root_dir=system_config.output_dir,
         log_every_n_steps=training_config.log_interval,

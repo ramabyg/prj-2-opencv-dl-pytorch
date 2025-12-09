@@ -52,7 +52,8 @@ class TrainingConfiguration:
         fine_tune_start: Layer index to start fine-tuning from
     """
     batch_size: int = 32
-    learning_rate: float = 0.001
+    learning_rate: float = 0.0001  # CHANGE 1: Reduced from 0.001 (better for fine-tuning ResNet50)
+    # ORIGINAL: learning_rate: float = 0.001
     num_epochs: int = 10
     momentum: float = 0.9
     log_interval: int = 10
@@ -68,10 +69,17 @@ class TrainingConfiguration:
     lr_step_size: int = 5  # For StepLR: step size for learning rate decay
     lr_gamma: float = 0.1  # For StepLR: multiplicative factor of learning rate decay
 
-    model_name: str = "googlenet"  # base model we will use for transfer learning
+    model_name: str = "resnet50"  # CHANGE 3: Changed from 'googlenet' (more powerful model)
+    # ORIGINAL: model_name: str = "googlenet"
     pretrained: bool = True  # use pretrained weights for the base model
     precision: str = "float32"  # precision for training: float32, float16, bfloat16
     fine_tune_start: int = 5  # layer from which to start fine-tuning
+
+    # Early stopping configuration
+    use_early_stopping: bool = True  # whether to use early stopping
+    early_stop_monitor: str = "valid/acc"  # metric to monitor for early stopping
+    early_stop_patience: int = 7  # number of epochs with no improvement before stopping
+    early_stop_mode: str = "max"  # 'min' for loss, 'max' for accuracy
 
 
 @dataclass
