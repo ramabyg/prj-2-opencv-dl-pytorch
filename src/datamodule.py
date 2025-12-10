@@ -21,10 +21,12 @@ class KenyanFood13DataModule(L.LightningDataModule):
 
     Args:
         data_config (DataConfiguration): Configuration object with dataset parameters
+        model_name (str, optional): Model name to use for preprocessing ('resnet50', 'efficientnetv2', 'googlenet')
+            If provided, uses model-specific preprocessing parameters.
         mean (list, optional): RGB channel means for normalization.
-            If None, uses ImageNet defaults [0.485, 0.456, 0.406]
+            If None and model_name is None, uses ImageNet defaults [0.485, 0.456, 0.406]
         std (list, optional): RGB channel standard deviations for normalization.
-            If None, uses ImageNet defaults [0.229, 0.224, 0.225]
+            If None and model_name is None, uses ImageNet defaults [0.229, 0.224, 0.225]
 
     Attributes:
         num_classes (int): Number of classes (available after calling setup())
@@ -34,14 +36,15 @@ class KenyanFood13DataModule(L.LightningDataModule):
     Example:
         >>> from src.config import DataConfiguration
         >>> data_config = DataConfiguration()
-        >>> data_module = KenyanFood13DataModule(data_config)
+        >>> data_module = KenyanFood13DataModule(data_config, model_name='efficientnetv2')
         >>> data_module.setup()
         >>> train_loader = data_module.train_dataloader()
     """
 
-    def __init__(self, data_config, mean=None, std=None):
+    def __init__(self, data_config, model_name=None, mean=None, std=None):
         super().__init__()
         self.data_config = data_config
+        self.model_name = model_name
 
         # Handle local mode annotation file naming
         local_mode = not is_kaggle_environment()
@@ -58,9 +61,21 @@ class KenyanFood13DataModule(L.LightningDataModule):
         self.val_dataset = None
         self.local_mode = local_mode
 
-        # Mean and Std for normalization - use provided values or defaults (ImageNet stats)
-        self.mean = mean if mean is not None else [0.485, 0.456, 0.406]
-        self.std = std if std is not None else [0.229, 0.224, 0.225]
+        # Get model-specific preprocessing if model_name is provided
+        if model_name:
+            from .model import KenyanFood13Classifier
+            _, input_size, model_mean, model_std = KenyanFood13Classifier.get_model_preprocessing(model_name)
+            # Override data_config input_size if using model-specific preprocessing
+            if self.data_config.input_size != input_size:
+                print(f"[INFO] Using model-specific input size: {input_size} (was {self.data_config.input_size})")
+                self.data_config.input_size = input_size
+            self.mean = mean if mean is not None else model_mean
+            self.std = std if std is not None else model_std
+            print(f"[INFO] Using model-specific preprocessing: mean={self.mean}, std={self.std}")
+        else:
+            # Mean and Std for normalization - use provided values or defaults (ImageNet stats)
+            self.mean = mean if mean is not None else [0.485, 0.456, 0.406]
+            self.std = std if std is not None else [0.229, 0.224, 0.225]
 
     def setup(self, stage=None):
         """

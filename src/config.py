@@ -50,6 +50,7 @@ class TrainingConfiguration:
         pretrained: Whether to use pretrained weights
         precision: Training precision ('float32', 'float16', 'bfloat16')
         fine_tune_start: Layer index to start fine-tuning from
+        freeze_pct: Percentage of parameters to freeze (0.0-1.0, default 0.6)
     """
     batch_size: int = 32
     learning_rate: float = 0.0001  # CHANGE 1: Reduced from 0.001 (better for fine-tuning ResNet50)
@@ -58,6 +59,7 @@ class TrainingConfiguration:
     momentum: float = 0.9
     log_interval: int = 10
     random_seed: int = 42
+    freeze_pct: float = 0.6  # Percentage of parameters to freeze (default 60%)
 
     # Optimizer configuration
     optimizer: str = "sgd"  # Options: 'sgd', 'adam', 'adamw'
@@ -69,7 +71,7 @@ class TrainingConfiguration:
     lr_step_size: int = 5  # For StepLR: step size for learning rate decay
     lr_gamma: float = 0.1  # For StepLR: multiplicative factor of learning rate decay
 
-    model_name: str = "resnet50"  # CHANGE 3: Changed from 'googlenet' (more powerful model)
+    model_name: str = "efficientnetv2"  # CHANGE 3: Changed from 'googlenet' (more powerful model)
     # ORIGINAL: model_name: str = "googlenet"
     pretrained: bool = True  # use pretrained weights for the base model
     precision: str = "float32"  # precision for training: float32, float16, bfloat16
