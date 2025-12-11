@@ -107,14 +107,15 @@ class KenyanFood13DataModule(L.LightningDataModule):
 
         # Augmentation transforms for training
         aug_transforms = transforms.Compose([
-            transforms.RandomResizedCrop((img_height, img_width)),
+            # transforms.RandomResizedCrop((img_height, img_width)),
+            transforms.Resize((img_height, img_width)),
             transforms.RandomHorizontalFlip(),
             transforms.RandomVerticalFlip(),
-            transforms.RandomRotation(15),
-            transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
+            # transforms.RandomRotation(15),
+            # transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
             transforms.ToTensor(),
             transforms.Normalize(mean=self.mean, std=self.std),
-            transforms.RandomErasing(p=0.5, scale=(0.02, 0.33), ratio=(0.3, 3.3))
+            # transforms.RandomErasing(p=0.5, scale=(0.02, 0.33), ratio=(0.3, 3.3))
         ])
 
         # Create datasets
