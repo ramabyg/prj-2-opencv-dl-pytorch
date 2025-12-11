@@ -8,6 +8,7 @@ from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 
 from .config import TrainingConfiguration, DataConfiguration, SystemConfiguration
+import os
 
 
 def train_model(
@@ -64,7 +65,7 @@ def train_model(
 
     # Model checkpoint callback
     checkpoint_callback = ModelCheckpoint(
-        dirpath=system_config.output_dir,
+        dirpath=os.path.join(system_config.output_dir, "checkpoints"),
         filename="{epoch}-{valid/acc:.4f}",
         save_top_k=3,
         monitor="valid/acc",
@@ -96,7 +97,7 @@ def train_model(
         name="kenyan_food_logs",
         version=None,  # Auto-incrementing version
         default_hp_metric=False,
-        log_graph=True  # Log model graph
+        log_graph=False  # Disable automatic graph logging (set True and provide example_input_array to enable)
     )
 
     # Map precision string to PyTorch Lightning expected value
