@@ -150,11 +150,16 @@ class KenyanFood13DataModule(L.LightningDataModule):
         if self.train_dataset is None:
             raise RuntimeError("train_dataset is not initialized. Call setup() before requesting train_dataloader.")
 
+        # Use num_workers=0 on Kaggle to avoid os.fork() deadlock with multi-GPU training
+        import os
+        num_workers = 0 if os.path.exists('/kaggle') else self.data_config.num_workers
+
         return DataLoader(
             self.train_dataset,
             batch_size=self.data_config.batch_size,
             shuffle=True,
-            num_workers=self.data_config.num_workers
+            num_workers=num_workers,
+            persistent_workers=False  # Disable persistent workers to avoid fork issues
         )
 
     def val_dataloader(self):
@@ -162,7 +167,7 @@ class KenyanFood13DataModule(L.LightningDataModule):
         Create validation dataloader.
 
         Returns:
-            DataLoader: Validation data loader (no shuffling)
+            DataLoader: Validation data loader without shuffling
 
         Raises:
             RuntimeError: If setup() hasn't been called yet
@@ -170,9 +175,14 @@ class KenyanFood13DataModule(L.LightningDataModule):
         if self.val_dataset is None:
             raise RuntimeError("val_dataset is not initialized. Call setup() before requesting val_dataloader.")
 
+        # Use num_workers=0 on Kaggle to avoid os.fork() deadlock with multi-GPU training
+        import os
+        num_workers = 0 if os.path.exists('/kaggle') else self.data_config.num_workers
+
         return DataLoader(
             self.val_dataset,
             batch_size=self.data_config.batch_size,
             shuffle=False,
-            num_workers=self.data_config.num_workers
+            num_workers=num_workers,
+            persistent_workers=False  # Disable persistent workers to avoid fork issues
         )
