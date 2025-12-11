@@ -100,7 +100,7 @@ class DataConfiguration:
     annotations_file: str = None
     img_dir: str = None
     input_size: int = 224  # input image size for the model
-    num_workers: int = 4  # number of workers for data loading
+    num_workers: int = 0  # number of workers for data loading (set to 0 to avoid JAX fork deadlock)
     batch_size: int = 32  # batch size for training and validation
 
     def __post_init__(self):

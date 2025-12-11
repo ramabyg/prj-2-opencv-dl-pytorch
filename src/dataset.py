@@ -68,23 +68,46 @@ class KenyanFood13Dataset(Dataset):
         self.target_transform = target_transform
         self.local_mode = local_mode
 
+        # Detect label column name (try 'class', 'label', 'food_id', 'food_label')
+        label_col = None
+        for col_name in ['class', 'label', 'food_id', 'food_label', 'food']:
+            if col_name in self.img_labels.columns:
+                label_col = col_name
+                break
+
+        if label_col is None:
+            # If no standard column found, show available columns and raise error
+            raise ValueError(
+                f"Could not find label column. Available columns: {list(self.img_labels.columns)}. "
+                f"Expected one of: 'class', 'label', 'food_id', 'food_label', 'food'"
+            )
+
+        self.label_col = label_col
+        print(f"[INFO] Using column '{label_col}' as label column")
+        print(f"[INFO] CSV columns: {list(self.img_labels.columns)}")
+        # Calculate number of classes
+        num_classes = len(self.img_labels[self.label_col].unique())
+        self.num_classes = num_classes
+
+
+        # create a mapping from class names to integer labels
+        self.class_to_idx = {cls_name: idx for idx, cls_name in enumerate(sorted(self.img_labels[self.label_col].unique()))}
+
 
         # Split into train and validation sets (80:20 ratio)
         split_index = int(0.8 * len(self.img_labels))
         if train:
             self.img_labels = self.img_labels.iloc[:split_index].reset_index(drop=True)
             print(f"Using {len(self.img_labels)} samples for training.")
+            #print class to idx mapping for reference
+            print(f"Class to index mapping: {self.class_to_idx}")
         else:
             self.img_labels = self.img_labels.iloc[split_index:].reset_index(drop=True)
             print(f"Using {len(self.img_labels)} samples for validation.")
+            #print class to idx mapping for reference
+            print(f"Class to index mapping: {self.class_to_idx}")
 
-        # Calculate number of classes
-        num_classes = len(self.img_labels['class'].unique())
-        self.num_classes = num_classes
         print(f"Dataset initialized with {len(self.img_labels)} samples belonging to {num_classes} classes.")
-
-        # create a mapping from class names to integer labels
-        self.class_to_idx = {cls_name: idx for idx, cls_name in enumerate(sorted(self.img_labels['class'].unique()))}
 
 
     def __getitem__(self, idx):
@@ -108,8 +131,9 @@ class KenyanFood13Dataset(Dataset):
         img_path = os.path.join(self.img_dir, img_filename)
         image = Image.open(img_path).convert("RGB")
 
-        # Get label and ensure it's an integer
-        label = int(self.class_to_idx[self.img_labels.iloc[idx, 1]])
+        # Get label from the detected label column and ensure it's an integer
+        label_value = self.img_labels.iloc[idx][self.label_col]
+        label = int(self.class_to_idx[label_value])
 
         # Apply transforms
         if self.transform:
