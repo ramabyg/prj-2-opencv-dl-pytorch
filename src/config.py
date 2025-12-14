@@ -53,21 +53,25 @@ class TrainingConfiguration:
         freeze_pct: Percentage of parameters to freeze (0.0-1.0, default 0.6)
     """
     batch_size: int = 32
-    learning_rate: float = 0.0001  # CHANGE 1: Reduced from 0.001 (better for fine-tuning ResNet50)
+    learning_rate: float = 0.0003  # IMPROVED: Increased from 0.0001 (was too low, causing slow learning)
+    # HISTORY: 0.001 → 0.0001 (too aggressive reduction) → 0.0003 (better balance)
     # ORIGINAL: learning_rate: float = 0.001
     num_epochs: int = 10
     momentum: float = 0.9
     log_interval: int = 10
     random_seed: int = 42
-    freeze_pct: float = 0.6  # Percentage of parameters to freeze (default 60%)
+    freeze_pct: float = 0.2  # IMPROVED: Reduced from 0.6 to 0.2 (freeze only 20%, train 80%)
+    # ORIGINAL: freeze_pct: float = 0.6  # Was freezing too much - caused underfitting
 
     # Optimizer configuration
-    optimizer: str = "sgd"  # Options: 'sgd', 'adam', 'adamw'
-    weight_decay: float = 0.0001  # L2 regularization
+    optimizer: str = "adamw"  # IMPROVED: Changed from 'sgd' - AdamW better for fine-tuning
+    # ORIGINAL: optimizer: str = "sgd"  # SGD was too slow for this task
+    weight_decay: float = 0.01  # IMPROVED: Increased from 0.0001 for better regularization
 
     # Learning rate scheduler configuration
     use_scheduler: bool = True
-    scheduler: str = "step"  # Options: 'step', 'cosine', 'reduce_on_plateau'
+    scheduler: str = "cosine"  # IMPROVED: Changed from 'step' - smoother decay, better for fine-tuning
+    # ORIGINAL: scheduler: str = "step"  # StepLR was too aggressive (gamma=0.1)
     lr_step_size: int = 5  # For StepLR: step size for learning rate decay
     lr_gamma: float = 0.1  # For StepLR: multiplicative factor of learning rate decay
 
