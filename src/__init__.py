@@ -40,7 +40,12 @@ from .dataset import KenyanFood13Dataset
 from .datamodule import KenyanFood13DataModule
 from .model import KenyanFood13Classifier
 from .trainer import train_model
-from .utils import calculate_dataset_mean_std, get_imagenet_stats
+from .inference import generate_predictions, create_submission
+
+from .utils import (
+    calculate_dataset_mean_std,
+    get_imagenet_stats
+)
 
 __all__ = [
     # Configuration

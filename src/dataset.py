@@ -46,7 +46,7 @@ class KenyanFood13Dataset(Dataset):
         FileNotFoundError: If annotations file or image directory doesn't exist
     """
 
-    def __init__(self, annotations_file, img_dir, train=True, transform=None,
+    def __init__(self, annotations_file, img_dir, train=True, test=False, transform=None,
                  target_transform=None, local_mode=False):
 
         # Handle local mode file naming
@@ -67,6 +67,18 @@ class KenyanFood13Dataset(Dataset):
         self.transform = transform
         self.target_transform = target_transform
         self.local_mode = local_mode
+        self.test_mode = test  # Flag for test/inference mode
+
+        # Test mode: no labels, just image IDs
+        if test:
+            print(f"[INFO] Test mode: Loading {len(self.img_labels)} test samples (no labels)")
+            print(f"[INFO] CSV columns: {list(self.img_labels.columns)}")
+            self.num_classes = None  # Unknown for test set
+            self.class_to_idx = None
+            self.label_col = None
+            return  # Skip label processing for test mode
+
+        # Training/Validation mode: has labels
 
         # Detect label column name (try 'class', 'label', 'food_id', 'food_label')
         label_col = None
@@ -118,7 +130,7 @@ class KenyanFood13Dataset(Dataset):
             idx (int or Tensor): Index of the sample to retrieve
 
         Returns:
-            tuple: (image, label) where image is a tensor and label is an integer
+            tuple: (image, label) for train/val, (image, image_id) for test
         """
         if torch.is_tensor(idx):
             idx = idx.tolist()
@@ -131,13 +143,19 @@ class KenyanFood13Dataset(Dataset):
         img_path = os.path.join(self.img_dir, img_filename)
         image = Image.open(img_path).convert("RGB")
 
-        # Get label from the detected label column and ensure it's an integer
-        label_value = self.img_labels.iloc[idx][self.label_col]
-        label = int(self.class_to_idx[label_value])
-
         # Apply transforms
         if self.transform:
             image = self.transform(image)
+
+        # Test mode: return image_id instead of label
+        if self.test_mode:
+            image_id = str(self.img_labels.iloc[idx, 0])  # Return original image_id
+            return image, image_id
+
+        # Training/Validation mode: return label
+        label_value = self.img_labels.iloc[idx][self.label_col]
+        label = int(self.class_to_idx[label_value])
+        
         if self.target_transform:
             label = self.target_transform(label)
 
