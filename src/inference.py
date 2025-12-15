@@ -167,7 +167,7 @@ def generate_predictions(
     # Show prediction distribution
     if isinstance(predicted_labels[0], str):
         print(f"\n[INFO] Prediction distribution:")
-        print(submission_df['label'].value_counts().head(10))
+        print(submission_df['class'].value_counts().head(10))
 
     return submission_df
 
