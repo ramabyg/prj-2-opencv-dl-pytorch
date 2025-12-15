@@ -53,15 +53,17 @@ class TrainingConfiguration:
         freeze_pct: Percentage of parameters to freeze (0.0-1.0, default 0.6)
     """
     batch_size: int = 32
-    learning_rate: float = 0.0003  # IMPROVED: Increased from 0.0001 (was too low, causing slow learning)
-    # HISTORY: 0.001 → 0.0001 (too aggressive reduction) → 0.0003 (better balance)
+    learning_rate: float = 0.0001  # OPTIMIZED: Lower LR for training all layers (was 0.0003)
+    # HISTORY: 0.001 → 0.0001 (stable) → 0.0003 (for freeze_pct=0.2) → 0.0001 (for freeze_pct=0.0)
+    # Use 0.0003 with freeze_pct=0.2, use 0.0001 with freeze_pct=0.0
     # ORIGINAL: learning_rate: float = 0.001
     num_epochs: int = 10
     momentum: float = 0.9
     log_interval: int = 10
     random_seed: int = 42
-    freeze_pct: float = 0.2  # IMPROVED: Reduced from 0.6 to 0.2 (freeze only 20%, train 80%)
-    # ORIGINAL: freeze_pct: float = 0.6  # Was freezing too much - caused underfitting
+    freeze_pct: float = 0.0  # RECOMMENDED: Unfreeze all layers for best accuracy (was 0.2)
+    # HISTORY: 0.6 → 0.2 (good for 82% acc) → 0.0 (target 85%+ acc)
+    # Set to 0.2 for faster training, 0.0 for highest accuracy
 
     # Optimizer configuration
     optimizer: str = "adamw"  # IMPROVED: Changed from 'sgd' - AdamW better for fine-tuning

@@ -158,8 +158,9 @@ class KenyanFood13Classifier(L.LightningModule):
         else:
             raise ValueError(f"Model {training_config.model_name} not supported. Use 'resnet50' or 'googlenet'.")
 
-        # Loss function
-        self.criterion = nn.CrossEntropyLoss()
+        # Loss function with label smoothing for better generalization
+        # Label smoothing helps when validation accuracy plateaus
+        self.criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
 
         # Training metrics
         self.train_mean_loss = MeanMetric()

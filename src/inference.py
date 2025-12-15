@@ -153,8 +153,8 @@ def generate_predictions(
 
     # Create submission dataframe
     submission_df = pd.DataFrame({
-        'image_id': all_image_ids,
-        'label': predicted_labels
+        'id': all_image_ids,
+        'class': predicted_labels
     })
 
     # Save to CSV
