@@ -66,9 +66,8 @@ class KenyanFood13Classifier(L.LightningModule):
             return weights.transforms(), 224, weights.transforms().mean, weights.transforms().std
         elif model_name == "efficientnetv2":
             weights = EfficientNet_V2_S_Weights.IMAGENET1K_V1
-            # PHASE 2: Increased from 384 to 480 for better detail preservation
-            # EfficientNetV2 supports higher resolutions for improved accuracy
-            return weights.transforms(), 480, weights.transforms().mean, weights.transforms().std
+            # Kept at 384 for memory efficiency (480 causes OOM on some GPUs)
+            return weights.transforms(), 384, weights.transforms().mean, weights.transforms().std
         elif model_name == "googlenet":
             from torchvision.models import GoogLeNet_Weights
             weights = GoogLeNet_Weights.IMAGENET1K_V1
