@@ -52,7 +52,7 @@ class TrainingConfiguration:
         fine_tune_start: Layer index to start fine-tuning from
         freeze_pct: Percentage of parameters to freeze (0.0-1.0, default 0.6)
     """
-    batch_size: int = 32
+    batch_size: int = 24  # PHASE 2: Reduced from 32 for 480x480 resolution (saves memory)
     learning_rate: float = 0.0001  # OPTIMIZED: Lower LR for training all layers (was 0.0003)
     # HISTORY: 0.001 → 0.0001 (stable) → 0.0003 (for freeze_pct=0.2) → 0.0001 (for freeze_pct=0.0)
     # Use 0.0003 with freeze_pct=0.2, use 0.0001 with freeze_pct=0.0
@@ -105,7 +105,10 @@ class DataConfiguration:
     """
     annotations_file: str = None
     img_dir: str = None
-    input_size: int = 224  # input image size for the model
+    input_size: int = 480  # PHASE 2: Default changed to 480 (auto-overridden by model-specific preprocessing)
+    # NOTE: When using model_name in DataModule, this is automatically overridden:
+    # - ResNet50/GoogleNet: 224x224
+    # - EfficientNetV2: 480x480 (Phase 2 upgrade)
     num_workers: int = 0  # number of workers for data loading (set to 0 to avoid JAX fork deadlock)
     batch_size: int = 32  # batch size for training and validation
 
