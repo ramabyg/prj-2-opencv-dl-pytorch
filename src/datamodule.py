@@ -106,13 +106,12 @@ class KenyanFood13DataModule(L.LightningDataModule):
         ])
 
         # Augmentation transforms for training
-        # PHASE 2: Added RandAugment for stronger augmentation
+        # PHASE 2: RandAugment with reduced magnitude for stability
         aug_transforms = transforms.Compose([
             transforms.Resize((img_height, img_width)),
-            # RandAugment: Randomly applies augmentations (rotation, color, sharpness, etc.)
-            # num_ops=2: apply 2 random operations per image
-            # magnitude=9: strength of augmentations (0-30, 9 is moderate-strong)
-            transforms.RandAugment(num_ops=2, magnitude=9),
+            # RandAugment: Reduced magnitude from 9 to 7 for less aggressive augmentation
+            # This should reduce validation oscillation while keeping good regularization
+            transforms.RandAugment(num_ops=2, magnitude=7),
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.ToTensor(),
             transforms.Normalize(mean=self.mean, std=self.std)

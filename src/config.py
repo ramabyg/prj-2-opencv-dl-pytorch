@@ -53,9 +53,9 @@ class TrainingConfiguration:
         freeze_pct: Percentage of parameters to freeze (0.0-1.0, default 0.6)
     """
     batch_size: int = 16  # OPTIMIZED: Reduced for memory efficiency with freeze_pct=0.0 (all layers trainable)
-    learning_rate: float = 0.0001  # OPTIMIZED: Lower LR for training all layers (was 0.0003)
-    # HISTORY: 0.001 → 0.0001 (stable) → 0.0003 (for freeze_pct=0.2) → 0.0001 (for freeze_pct=0.0)
-    # Use 0.0003 with freeze_pct=0.2, use 0.0001 with freeze_pct=0.0
+    learning_rate: float = 0.00007  # FINE-TUNED: Reduced for smoother convergence (was 0.0001, caused oscillation)
+    # HISTORY: 0.001 → 0.0001 (stable) → 0.0003 (for freeze_pct=0.2) → 0.0001 (for freeze_pct=0.0) → 0.00007 (for stability)
+    # Use 0.0003 with freeze_pct=0.2, use 0.0001 with freeze_pct=0.0, use 0.00007 for smoothest convergence
     # ORIGINAL: learning_rate: float = 0.001
     num_epochs: int = 10
     momentum: float = 0.9
@@ -86,7 +86,8 @@ class TrainingConfiguration:
     # Early stopping configuration
     use_early_stopping: bool = True  # whether to use early stopping
     early_stop_monitor: str = "valid/acc"  # metric to monitor for early stopping
-    early_stop_patience: int = 7  # number of epochs with no improvement before stopping
+    early_stop_patience: int = 15  # INCREASED: More patience for Phase 2 (RandAugment needs longer convergence)
+    # HISTORY: 7 (stopped too early at epoch 20) → 15 (allow more exploration)
     early_stop_mode: str = "max"  # 'min' for loss, 'max' for accuracy
 
 
