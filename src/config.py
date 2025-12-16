@@ -52,10 +52,11 @@ class TrainingConfiguration:
         fine_tune_start: Layer index to start fine-tuning from
         freeze_pct: Percentage of parameters to freeze (0.0-1.0, default 0.6)
     """
-    batch_size: int = 16  # OPTIMIZED: Reduced for memory efficiency with freeze_pct=0.0 (all layers trainable)
-    learning_rate: float = 0.00007  # FINE-TUNED: Reduced for smoother convergence (was 0.0001, caused oscillation)
-    # HISTORY: 0.001 → 0.0001 (stable) → 0.0003 (for freeze_pct=0.2) → 0.0001 (for freeze_pct=0.0) → 0.00007 (for stability)
-    # Use 0.0003 with freeze_pct=0.2, use 0.0001 with freeze_pct=0.0, use 0.00007 for smoothest convergence
+    batch_size: int = 8  # MEMORY FIX: Reduced for GPU stability (was 16, caused OOM and hangs)
+    learning_rate: float = 0.00003  # ANTI-OVERFITTING: Further reduced to combat 12% train-val gap
+    # Analysis showed severe overfitting: train 99.24% vs val 80.28% at epoch 22
+    # HISTORY: 0.001 → 0.0001 → 0.0003 (freeze_pct=0.2) → 0.0001 (freeze_pct=0.0) → 0.00007 → 0.00005 → 0.00003 (combat overfitting)
+    # Lower LR slows training, giving stronger augmentation time to work
     # ORIGINAL: learning_rate: float = 0.001
     num_epochs: int = 10
     momentum: float = 0.9

@@ -109,9 +109,10 @@ class KenyanFood13DataModule(L.LightningDataModule):
         # PHASE 2: RandAugment with reduced magnitude for stability
         aug_transforms = transforms.Compose([
             transforms.Resize((img_height, img_width)),
-            # RandAugment: Reduced magnitude from 9 to 7 for less aggressive augmentation
-            # This should reduce validation oscillation while keeping good regularization
-            transforms.RandAugment(num_ops=2, magnitude=7),
+            # RandAugment: INCREASED magnitude from 7 to 12 to combat severe overfitting
+            # Analysis showed 12% train-val gap (train 99%, val 80%), need much stronger augmentation
+            # Previous magnitude=7 was too weak, model memorized training set
+            transforms.RandAugment(num_ops=2, magnitude=12),
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.ToTensor(),
             transforms.Normalize(mean=self.mean, std=self.std)
